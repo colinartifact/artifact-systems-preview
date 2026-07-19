@@ -18,7 +18,7 @@
       document.documentElement.setAttribute("data-theme", t === "light" ? "light" : "dark");
     })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=2" />
+  <link rel="stylesheet" href="css/style.css?v=3" />
 </head>
 <body>
 
@@ -74,6 +74,7 @@
         <svg class="nav-logo" viewBox="0 0 528 80.32" aria-hidden="true"><use href="#as-logo"/></svg>
       </a>
       <nav class="nav-links" aria-label="Primary">
+        <a href="#services">Services</a>
         <a href="#infrastructure">Infrastructure</a>
         <a href="#compliance">Compliance</a>
         <a href="#coverage">Coverage</a>
@@ -98,7 +99,7 @@
       <div class="hero-scrim scrim-light" aria-hidden="true"></div>
       <div class="hero-content">
         <h1>Blockchain data<br /><span class="dim">built to be audited.</span></h1>
-        <p class="hero-sub">Artifact Systems runs its own hardware in major jurisdictions, delivering verifiable chain data to custodians, auditors, and financial institutions.</p>
+        <p class="hero-sub">Artifact Systems runs its own hardware in major jurisdictions, delivering staking, RPC, and verifiable chain data to custodians, exchanges, and financial institutions.</p>
         <div class="hero-cta">
           <a class="btn btn-primary" href="#contact">Request access</a>
           <a class="btn btn-ghost" href="#infrastructure">View infrastructure</a>
@@ -130,13 +131,81 @@
       </div>
     </section>
 
+    <!-- ============ SERVICES ============ -->
+    <section class="section section-tint" id="services">
+      <div class="container">
+        <div class="coverage-head reveal">
+          <p class="eyebrow">Services</p>
+          <h2>Validation and RPC, at institutional scale.</h2>
+          <p class="body">Two service lines, one standard: engineered for foundations, custodians, crypto banks, exchanges, and trading groups whose operations cannot depend on shared public infrastructure.</p>
+        </div>
+        <div class="stat-row reveal">
+          <div class="stat"><span class="stat-num">100+</span><span class="stat-label">Blockchains in production</span></div>
+          <div class="stat"><span class="stat-num">50B+</span><span class="stat-label">RPC requests per month</span></div>
+          <div class="stat"><span class="stat-num">99.99%</span><span class="stat-label">Uptime</span></div>
+        </div>
+        <div class="services-tabs reveal" role="tablist" aria-label="Service lines">
+          <button type="button" role="tab" id="tab-validation" aria-selected="true" aria-controls="panel-validation">Validation &amp; Staking</button>
+          <button type="button" role="tab" id="tab-rpc" aria-selected="false" aria-controls="panel-rpc" tabindex="-1">RPC</button>
+        </div>
+        <div class="services-viewport reveal">
+          <div class="services-track" id="services-track">
+            <div class="svc-panel" role="tabpanel" id="panel-validation" aria-labelledby="tab-validation">
+              <p class="svc-lead">Institutions stake through Artifact validators — under their brand or ours — on infrastructure engineered to protect principal at size.</p>
+              <div class="svc-grid">
+                <div class="svc-item">
+                  <h4>White-label validation</h4>
+                  <p>Validator infrastructure operated under your institution's brand. We carry the technical complexity; you hold the client relationship.</p>
+                </div>
+                <div class="svc-item">
+                  <h4>Delegation programs</h4>
+                  <p>Direct delegations to Artifact-operated validators, with commission economics negotiated for treasuries and foundations.</p>
+                </div>
+                <div class="svc-item">
+                  <h4>Slashing protection</h4>
+                  <p>Redundant signing paths and continuous monitoring, engineered so slashing exposure approaches zero.</p>
+                </div>
+                <div class="svc-item">
+                  <h4>Custody-grade integration</h4>
+                  <p>Real-time reporting wired into your custody, risk, and compliance workflows.</p>
+                </div>
+              </div>
+            </div>
+            <div class="svc-panel" role="tabpanel" id="panel-rpc" aria-labelledby="tab-rpc" hidden>
+              <p class="svc-lead">Dedicated chain access for platforms and desks that cannot queue behind public endpoints — enterprise speeds at fixed cost.</p>
+              <div class="svc-grid">
+                <div class="svc-item">
+                  <h4>Private bare metal</h4>
+                  <p>Dedicated servers with client-specific load balancing. No rate caps, no transaction limits, no shared tenancy.</p>
+                </div>
+                <div class="svc-item">
+                  <h4>Enterprise clusters</h4>
+                  <p>High-capacity pooled infrastructure with contractual rate limits and fixed, predictable pricing.</p>
+                </div>
+                <div class="svc-item">
+                  <h4>Full archive</h4>
+                  <p>Complete chain history from genesis, queryable at any block height.</p>
+                </div>
+                <div class="svc-item">
+                  <h4>Coverage on demand</h4>
+                  <p>Chains mainstream providers do not serve, stood up on sovereign hardware inside the SOC 2 scope.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="footnote reveal">Adjacent capability lines — sequencing, ZK proving, and dedicated GPU compute — are scoped per engagement.</p>
+      </div>
+    </section>
+
     <!-- ============ INFRASTRUCTURE ============ -->
     <section class="section" id="infrastructure">
       <div class="container split">
         <div class="split-copy reveal">
           <p class="eyebrow">Infrastructure</p>
           <h2>Every byte served from hardware we own.</h2>
-          <p class="body">Artifact Systems holds no cloud instances and rents no capacity. Nodes, indexes, and delivery interfaces run on company-owned machines in facilities located where institutions already operate.</p>
+          <p class="body">Artifact Systems holds no cloud instances and rents no capacity. Validators, nodes, and delivery interfaces run on fine-tuned, company-owned machines in Tier III facilities, managed in-house by operators native to the chains they run.</p>
+          <p class="body">General-purpose clouds charge more for less. Owning the metal is how we deliver performance they cannot supply, at fixed and predictable cost.</p>
           <p class="body">Provisioning is jurisdiction-aware: data can be served, stored, and replicated within the borders your regulators require.</p>
         </div>
         <div class="split-panel reveal">
@@ -180,6 +249,24 @@
             <p>Personnel, change management, continuous monitoring, and incident response.</p>
           </div>
         </div>
+        <div class="ops-grid">
+          <div class="ops-item reveal">
+            <h4>24/7/365 monitoring</h4>
+            <p>Real-time system monitoring with continuous on-call coverage.</p>
+          </div>
+          <div class="ops-item reveal">
+            <h4>Independent testing</h4>
+            <p>Third-party security audits and penetration tests on a regular cycle.</p>
+          </div>
+          <div class="ops-item reveal">
+            <h4>Geographic redundancy</h4>
+            <p>Production mirrored across regions for continuity through regional failure.</p>
+          </div>
+          <div class="ops-item reveal">
+            <h4>Follow-the-sun staff</h4>
+            <p>Globally distributed operators for continuous timezone coverage.</p>
+          </div>
+        </div>
         <p class="footnote reveal">Attestation reports are available to clients and prospective clients under NDA.</p>
       </div>
     </section>
@@ -188,7 +275,7 @@
     <section class="section statement">
       <div class="container narrow reveal">
         <p class="statement-text">In production today for multiple custodians serving major institutions across Web3.</p>
-        <p class="statement-note">Our client list stays confidential by design. Institutional references are available during diligence.</p>
+        <p class="statement-note">Blockchain foundations, custodians, crypto banks, exchanges, and trading groups. The client list stays confidential by design; institutional references are available during diligence.</p>
       </div>
     </section>
 
@@ -267,6 +354,7 @@
         <svg class="footer-logo" viewBox="0 0 528 80.32" aria-hidden="true"><use href="#as-logo"/></svg>
       </a>
       <nav class="footer-links" aria-label="Footer">
+        <a href="#services">Services</a>
         <a href="#infrastructure">Infrastructure</a>
         <a href="#compliance">Compliance</a>
         <a href="#coverage">Coverage</a>
@@ -278,6 +366,6 @@
 
   <script src="js/rpc-config.js?v=1" defer></script>
   <script src="js/ascii-hero.js?v=17" defer></script>
-  <script src="js/main.js?v=12" defer></script>
+  <script src="js/main.js?v=13" defer></script>
 </body>
 </html>

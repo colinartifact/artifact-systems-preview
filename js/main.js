@@ -209,6 +209,62 @@
     });
   }
 
+  /* ---------- Services tabs (sliding panels) ---------- */
+
+  (function () {
+    var tabs = [
+      document.getElementById("tab-validation"),
+      document.getElementById("tab-rpc")
+    ];
+    var panels = [
+      document.getElementById("panel-validation"),
+      document.getElementById("panel-rpc")
+    ];
+    var track = document.getElementById("services-track");
+    if (!track || !tabs[0] || !tabs[1]) return;
+    var viewport = track.parentElement;
+    var current = 0;
+    var hideTimer = null;
+
+    function fitViewport() {
+      viewport.style.height = panels[current].offsetHeight + "px";
+    }
+
+    function select(i) {
+      if (i === current) return;
+      var prev = current;
+      current = i;
+      panels[i].hidden = false;
+      tabs.forEach(function (tab, k) {
+        tab.setAttribute("aria-selected", k === i ? "true" : "false");
+        tab.tabIndex = k === i ? 0 : -1;
+      });
+      track.style.transform = "translateX(" + (-i * 100) + "%)";
+      fitViewport();
+      // Keep the outgoing panel rendered while it slides away, then
+      // hide it from assistive tech and tab order.
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(function () {
+        panels[prev].hidden = true;
+      }, reduceMotion ? 0 : 650);
+      tabs[i].focus({ preventScroll: true });
+    }
+
+    tabs.forEach(function (tab, i) {
+      tab.addEventListener("click", function () { select(i); });
+      tab.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+          e.preventDefault();
+          select(1 - i);
+        }
+      });
+    });
+
+    window.addEventListener("resize", fitViewport);
+    window.addEventListener("load", fitViewport);
+    fitViewport();
+  })();
+
   /* ---------- Reveal on scroll ---------- */
 
   var revealEls = document.querySelectorAll(".reveal");
