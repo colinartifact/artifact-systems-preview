@@ -293,12 +293,14 @@
     if (cssW < 768) {
       size = Math.min(cssW, cssH) * 0.68;
       cx = cssW * 0.5;
-      cy = cssH * 0.34;
+      cy = cssH * 0.38;
     } else {
-      size = Math.min(cssH * 0.8, cssW * 0.55);
+      size = Math.min(cssH * 0.76, cssW * 0.55);
       cx = cssW * 0.67;
-      cy = cssH * 0.47;
+      cy = cssH * 0.52;
     }
+    // Keep the mark's top edge clear of the fixed nav bar.
+    cy = Math.max(cy, 84 + size / 2);
 
     // The ripple emitters live here even before the image loads.
     logoCx = cx;
