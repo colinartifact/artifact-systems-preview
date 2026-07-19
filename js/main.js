@@ -209,6 +209,40 @@
     });
   }
 
+  /* ---------- Mobile menu ---------- */
+
+  (function () {
+    var menuBtn = document.getElementById("menu-toggle");
+    var menu = document.getElementById("mobile-menu");
+    if (!menuBtn || !menu) return;
+
+    function setOpen(open) {
+      menu.classList.toggle("is-open", open);
+      menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      menuBtn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    }
+
+    menuBtn.addEventListener("click", function () {
+      setOpen(menuBtn.getAttribute("aria-expanded") !== "true");
+    });
+
+    // Navigating from the menu closes it.
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) setOpen(false);
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") setOpen(false);
+    });
+
+    // A tap outside the header closes it.
+    document.addEventListener("click", function (e) {
+      if (menu.classList.contains("is-open") && !e.target.closest(".nav")) {
+        setOpen(false);
+      }
+    });
+  })();
+
   /* ---------- Services tabs (sliding panels) ---------- */
 
   (function () {

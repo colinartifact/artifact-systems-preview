@@ -18,7 +18,7 @@
       document.documentElement.setAttribute("data-theme", t === "light" ? "light" : "dark");
     })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=3" />
+  <link rel="stylesheet" href="css/style.css?v=5" />
 </head>
 <body>
 
@@ -87,6 +87,20 @@
         </svg>
       </button>
       <a class="btn btn-primary btn-nav" href="#contact">Request access</a>
+      <button id="menu-toggle" class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </button>
+    </div>
+    <div class="mobile-menu" id="mobile-menu">
+      <nav class="mobile-menu-links" aria-label="Mobile">
+        <a href="#services">Services</a>
+        <a href="#infrastructure">Infrastructure</a>
+        <a href="#compliance">Compliance</a>
+        <a href="#coverage">Coverage</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <a class="btn btn-primary mobile-menu-cta" href="#contact">Request access</a>
     </div>
   </header>
 
@@ -366,6 +380,6 @@
 
   <script src="js/rpc-config.js?v=1" defer></script>
   <script src="js/ascii-hero.js?v=17" defer></script>
-  <script src="js/main.js?v=13" defer></script>
+  <script src="js/main.js?v=14" defer></script>
 </body>
 </html>
