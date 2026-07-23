@@ -150,7 +150,7 @@
       <div class="container">
         <div class="coverage-head reveal">
           <p class="eyebrow">Services</p>
-          <h2>Enterprise validation and RPC.</h2>
+          <h2>Enterprise validation, RPC, and chain data.</h2>
           <p class="body">Engineered for operations that demand a compliant, uncompromising standard.</p>
         </div>
         <div class="stat-row reveal">
@@ -161,6 +161,7 @@
         <div class="services-tabs reveal" role="tablist" aria-label="Service lines">
           <button type="button" role="tab" id="tab-validation" aria-selected="true" aria-controls="panel-validation">Validation &amp; Staking</button>
           <button type="button" role="tab" id="tab-rpc" aria-selected="false" aria-controls="panel-rpc" tabindex="-1">RPC</button>
+          <button type="button" role="tab" id="tab-data" aria-selected="false" aria-controls="panel-data" tabindex="-1">Chain Data</button>
         </div>
         <div class="services-viewport reveal">
           <div class="services-track" id="services-track">
@@ -203,6 +204,27 @@
                 <div class="svc-item">
                   <h4>Coverage on demand</h4>
                   <p>Chains mainstream providers do not serve, stood up on sovereign hardware inside the SOC 2 scope.</p>
+                </div>
+              </div>
+            </div>
+            <div class="svc-panel" role="tabpanel" id="panel-data" aria-labelledby="tab-data" hidden>
+              <p class="svc-lead">Blockchain data independently verified across sources — so balances and transactions can be trusted, and proven.</p>
+              <div class="svc-grid">
+                <div class="svc-item">
+                  <h4>Cross-checked responses</h4>
+                  <p>Every request is answered from multiple independent sources at once — our private infrastructure and trusted public endpoints — and reconciled before it returns.</p>
+                </div>
+                <div class="svc-item">
+                  <h4>Defensible audit trail</h4>
+                  <p>Each response is preserved with full source attribution and discrepancy visibility: point-in-time evidence for audits, SOC controls, and regulatory review.</p>
+                </div>
+                <div class="svc-item">
+                  <h4>Reconciliation-ready</h4>
+                  <p>Proof of reserves, NAV validation, and wallet balance checks — verified across sources instead of trusted to a single provider.</p>
+                </div>
+                <div class="svc-item">
+                  <h4>Deployed to fit</h4>
+                  <p>A managed service, an integration into existing accounting and compliance workflows, or a secure enclave for sensitive environments.</p>
                 </div>
               </div>
             </div>
@@ -372,6 +394,6 @@
 
   <script src="js/rpc-config.js?v=1" defer></script>
   <script src="js/ascii-hero.js?v=19" defer></script>
-  <script src="js/main.js?v=14" defer></script>
+  <script src="js/main.js?v=16" defer></script>
 </body>
 </html>
