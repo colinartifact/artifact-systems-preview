@@ -416,10 +416,12 @@
       // streak velocity, so the motion never steps or stutters.
       var px = time * spd;
       var shift = Math.floor(px / CELL_W);
-      // Quantize the sub-cell offset to half pixels: still glides
-      // smoothly, but stops the anti-aliasing shimmer that reads as
-      // flicker on bright glyphs at continuously fractional positions.
-      var frac = Math.round((px - shift * CELL_W) * 2) / 2;
+      // Snap the sub-cell offset to whole pixels. A glyph at a
+      // fractional x re-rasterizes its anti-aliased edges every frame
+      // (crisp at integer x, blurred at half x) — that twinkle is the
+      // flicker. Whole-pixel positions rasterize identically frame to
+      // frame; motion steps 1px at a time, still smooth at these speeds.
+      var frac = Math.round(px - shift * CELL_W);
 
       for (var c = -1; c < cols; c++) {
         var ci = (c - shift) % llen;
@@ -465,13 +467,19 @@
         var g = Math.exp(-(dx * dx + dy * dy) * invRad2);
         var lift = g * CURSOR_LIFT;
 
-        if (lum + lift < 0.05) continue; // below the visible floor
+        var total = lum + lift;
+        if (total < 0.02) continue; // below the visible floor
 
-        var v = Math.min(1, lum + lift);
-        var gDark = 26 + v * 148;
-        var gLight = 230 - v * 156;
+        var v = Math.min(1, total);
+        // Gray endpoints resolve to the page background (black in dark,
+        // white in light) as v -> 0, and a soft alpha ramp fades the
+        // faintest glyphs instead of switching them on and off frame to
+        // frame. Together these remove the shimmer at streak edges.
+        var alpha = total < 0.12 ? (total - 0.02) / 0.1 : 1;
+        var gDark = v * 180;               // 0 (bg) -> 180 on black
+        var gLight = 255 - v * 225;        // 255 (bg) -> 30 on white; darker = more visible
         var gray = Math.round(gDark + (gLight - gDark) * themeMix);
-        ctx.fillStyle = "rgb(" + gray + "," + gray + "," + gray + ")";
+        ctx.fillStyle = "rgba(" + gray + "," + gray + "," + gray + "," + alpha.toFixed(3) + ")";
         ctx.fillText(ch, x, y);
       }
     }

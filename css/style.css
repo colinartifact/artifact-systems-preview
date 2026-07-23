@@ -43,10 +43,12 @@
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: #f5f5f5;
-  --bg-rgb: 245, 245, 245;
-  --bg-tint: #eeeeee;
-  --bg-panel: #f0f0f0;
+  /* One uniform white, mirroring the pure-black dark theme; hairline
+     borders carry section and card structure. */
+  --bg: #ffffff;
+  --bg-rgb: 255, 255, 255;
+  --bg-tint: #ffffff;
+  --bg-panel: #ffffff;
   --border: #d7d7d7;
   --border-faint: #e3e3e3;
   --text: #141414;
@@ -404,8 +406,8 @@ h2 {
 }
 .scrim-light {
   background:
-    linear-gradient(90deg, rgba(245,245,245,0.9) 0%, rgba(245,245,245,0.58) 44%, rgba(245,245,245,0.05) 78%),
-    linear-gradient(0deg, rgba(245,245,245,0.92) 0%, rgba(245,245,245,0) 30%);
+    linear-gradient(90deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.58) 44%, rgba(255,255,255,0.05) 78%),
+    linear-gradient(0deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0) 30%);
   opacity: 0;
 }
 :root[data-theme="light"] .scrim-dark { opacity: 0; }
@@ -839,7 +841,7 @@ h2 {
   }
   .scrim-light {
     background:
-      linear-gradient(0deg, rgba(245,245,245,0.94) 0%, rgba(245,245,245,0.76) 55%, rgba(245,245,245,0.44) 100%);
+      linear-gradient(0deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.76) 55%, rgba(255,255,255,0.44) 100%);
   }
   .container, .nav-inner { padding-left: 20px; padding-right: 20px; }
   .nav-links { display: none; }
