@@ -687,6 +687,10 @@ h2 {
 /* ---------- Coverage ---------- */
 
 .coverage-head { max-width: 640px; margin-bottom: 64px; }
+/* Let the longer services heading sit on one line when the viewport
+   allows; it still wraps naturally on narrow screens. The intro line
+   stays readable via .body's own max-width. */
+#services .coverage-head { max-width: none; }
 
 .chain-grid {
   display: grid;
