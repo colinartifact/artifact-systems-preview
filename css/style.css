@@ -751,12 +751,16 @@ h2 {
 
 /* ---------- Contact ---------- */
 
-.contact { padding: 160px 0; text-align: left; }
-.contact h2 { max-width: 22ch; }
+.contact { padding: 160px 0; text-align: center; }
+/* No cap so the headline stays on one line when the viewport allows;
+   it wraps naturally on narrow screens. */
+.contact h2 { max-width: none; }
+.contact .body { max-width: none; }
 
 .contact-actions {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 28px;
   margin-top: 44px;
   flex-wrap: wrap;
