@@ -769,13 +769,13 @@ h2 {
 .chain-set {
   display: flex;
   align-items: center;
-  gap: 64px;
-  padding-right: 64px;
+  gap: 80px;
+  padding-right: 80px;
 }
 
 .chain-logo { display: flex; align-items: center; flex: none; }
 .chain-logo svg {
-  height: 26px;
+  height: 40px;
   display: block;
   fill: currentColor;
 }

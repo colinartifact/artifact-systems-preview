@@ -15,7 +15,7 @@ ROOT = Path(__file__).parent
 CHAINS_DIR = ROOT / "assets" / "chains"
 INDEX = ROOT / "index.html"
 
-LOGO_HEIGHT = 26  # px, marquee row height
+LOGO_HEIGHT = 40  # px, marquee row height
 
 # (slug, display name) in display order.
 CHAINS = [
