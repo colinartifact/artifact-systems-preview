@@ -604,7 +604,6 @@ h2 {
   font-size: 1.15rem;
   font-weight: 330;
   color: var(--text);
-  max-width: 56ch;
   margin-bottom: 44px;
 }
 .svc-grid {
@@ -747,6 +746,47 @@ h2 {
 .serve-panel p {
   color: var(--text-dim);
   font-size: 0.96rem;
+}
+
+/* ---------- Chain logo marquee ---------- */
+
+.chain-marquee {
+  margin-top: 72px;
+  overflow: hidden;
+  /* Faded borders on both sides. */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+
+.chain-track {
+  display: flex;
+  width: max-content;
+  color: var(--text-dim);
+  /* One .chain-set width per cycle; from -50% to 0 = drifting rightward. */
+  animation: chain-scroll 240s linear infinite;
+}
+
+.chain-set {
+  display: flex;
+  align-items: center;
+  gap: 64px;
+  padding-right: 64px;
+}
+
+.chain-logo { display: flex; align-items: center; flex: none; }
+.chain-logo svg {
+  height: 26px;
+  display: block;
+  fill: currentColor;
+}
+
+@keyframes chain-scroll {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chain-track { animation: none; }
 }
 
 /* ---------- Contact ---------- */
