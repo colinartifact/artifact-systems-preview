@@ -18,7 +18,7 @@
       document.documentElement.setAttribute("data-theme", t === "light" ? "light" : "dark");
     })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=11" />
+  <link rel="stylesheet" href="css/style.css?v=12" />
 </head>
 <body>
 
@@ -624,13 +624,69 @@
         <h2>Tell us what your operation needs.</h2>
         <p class="body">We scope requirements directly with every client.</p>
         <div class="contact-actions">
-          <a class="btn btn-primary" href="mailto:contact@artifact-systems.io">Request access</a>
-          <a class="contact-mail" href="mailto:contact@artifact-systems.io">contact@artifact-systems.io</a>
+          <button class="btn btn-primary" type="button" id="contact-open">Request access</button>
         </div>
       </div>
     </section>
 
   </main>
+
+  <!-- ============ CONTACT MODAL ============ -->
+  <div class="contact-modal" id="contact-modal" role="dialog" aria-modal="true" aria-labelledby="contact-modal-title" hidden>
+    <div class="contact-modal-backdrop" data-close></div>
+    <div class="contact-modal-panel" role="document">
+      <button class="contact-modal-close" type="button" aria-label="Close" data-close>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+      </button>
+      <div class="cf-body" id="cf-body">
+        <h3 id="contact-modal-title">Request access</h3>
+        <p class="cf-sub">We scope requirements directly with every client.</p>
+        <form id="contact-form" novalidate>
+          <div class="cf-grid">
+            <label class="cf-field">
+              <span>Name</span>
+              <input name="from_name" type="text" required autocomplete="name" />
+            </label>
+            <label class="cf-field">
+              <span>Email</span>
+              <input name="from_email" type="email" required autocomplete="email" />
+            </label>
+            <label class="cf-field">
+              <span>Company</span>
+              <input name="company" type="text" required autocomplete="organization" />
+            </label>
+            <label class="cf-field">
+              <span>Interested in</span>
+              <span class="cf-select">
+                <select name="interested_in" required>
+                  <option value="" disabled selected>Select an option</option>
+                  <option>Validation</option>
+                  <option>Staking</option>
+                  <option>RPC</option>
+                  <option>Indexing</option>
+                  <option>Advice</option>
+                </select>
+              </span>
+            </label>
+          </div>
+          <label class="cf-field">
+            <span>Message</span>
+            <textarea name="message" rows="5" required></textarea>
+          </label>
+          <!-- Honeypot: hidden from humans; bots that fill it are dropped. -->
+          <input class="cf-hp" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" />
+          <!-- reCAPTCHA mounts here once a site key is set in js/contact.js. -->
+          <div id="contact-captcha"></div>
+          <p class="cf-error" id="cf-error" hidden>Something went wrong sending your request. Please try again.</p>
+          <button class="btn btn-primary cf-submit" id="cf-submit" type="submit">Send request</button>
+        </form>
+      </div>
+      <div class="cf-success" id="cf-success" hidden>
+        <h3 id="cf-success-title">Request received.</h3>
+        <p class="cf-sub" id="cf-success-sub">Our team will be in touch shortly.</p>
+      </div>
+    </div>
+  </div>
 
   <footer class="footer">
     <div class="container footer-inner">
@@ -650,5 +706,6 @@
   <script src="js/rpc-config.js?v=1" defer></script>
   <script src="js/ascii-hero.js?v=19" defer></script>
   <script src="js/main.js?v=16" defer></script>
+  <script src="js/contact.js?v=3" defer></script>
 </body>
 </html>

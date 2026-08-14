@@ -817,6 +817,171 @@ h2 {
 }
 .contact-mail:hover { color: var(--text); border-color: var(--text-faint); }
 
+/* ---------- Contact modal ---------- */
+
+.contact-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.contact-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.35s var(--ease);
+}
+:root[data-theme="light"] .contact-modal-backdrop {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.contact-modal-panel {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 48px;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.35s var(--ease), transform 0.35s var(--ease);
+}
+
+.contact-modal.is-open .contact-modal-backdrop { opacity: 1; }
+.contact-modal.is-open .contact-modal-panel { opacity: 1; transform: translateY(0); }
+
+.contact-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  background: transparent;
+  border: 1px solid var(--ghost-border);
+  color: var(--text);
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 0.25s var(--ease);
+}
+.contact-modal-close:hover { border-color: var(--ghost-border-hover); }
+.contact-modal-close svg { width: 14px; height: 14px; }
+
+.contact-modal-panel h3 {
+  font-size: 1.5rem;
+  font-weight: 380;
+  letter-spacing: -0.01em;
+}
+
+.cf-sub {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  margin: 10px 0 34px;
+}
+
+.cf-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px 20px;
+  margin-bottom: 22px;
+}
+
+.cf-field { display: flex; flex-direction: column; gap: 8px; }
+.cf-field > span:first-child {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--text-faint);
+}
+
+.cf-field input,
+.cf-field select,
+.cf-field textarea {
+  width: 100%;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  padding: 11px 14px;
+  transition: border-color 0.25s var(--ease);
+}
+.cf-field textarea { resize: vertical; min-height: 110px; }
+.cf-field input:focus,
+.cf-field select:focus,
+.cf-field textarea:focus {
+  outline: none;
+  border-color: var(--ghost-border-hover);
+}
+
+.cf-select { position: relative; display: block; }
+.cf-select select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  padding-right: 36px;
+}
+.cf-select::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-right: 1px solid var(--text-faint);
+  border-bottom: 1px solid var(--text-faint);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+.cf-select select:invalid { color: var(--text-faint); }
+.cf-select option { color: initial; }
+
+.cf-hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.cf-error {
+  color: var(--text-dim);
+  font-size: 0.88rem;
+  border-left: 2px solid var(--text-faint);
+  padding-left: 12px;
+  margin-top: 20px;
+}
+
+.cf-submit { margin-top: 28px; width: 100%; justify-content: center; display: flex; }
+.cf-submit:disabled { opacity: 0.55; cursor: default; }
+
+.cf-success { text-align: center; padding: 40px 0 24px; }
+.cf-success .cf-sub { margin-bottom: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-modal-backdrop, .contact-modal-panel { transition: none; }
+}
+
+@media (max-width: 640px) {
+  .contact-modal { padding: 12px; }
+  .contact-modal-panel { padding: 36px 24px; }
+  .cf-grid { grid-template-columns: 1fr; }
+}
+
 /* ---------- Footer ---------- */
 
 .footer {
