@@ -556,12 +556,58 @@ h2 {
 }
 
 .services-tabs {
+  position: relative;
+  z-index: 0;
   display: inline-flex;
   border: 1px solid var(--ghost-border);
   border-radius: 999px;
   padding: 4px;
   gap: 4px;
   margin-bottom: 40px;
+}
+
+/* Subtle animated glow: a faint light tracing the pill's border. */
+@property --tabs-glow {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+.services-tabs::before,
+.services-tabs::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 999px;
+  background: conic-gradient(
+    from var(--tabs-glow),
+    transparent 0deg 290deg,
+    rgba(var(--dot-rgb), 0.4) 325deg,
+    transparent 360deg
+  );
+  pointer-events: none;
+  animation: tabs-glow-spin 9s linear infinite;
+}
+.services-tabs::before {
+  /* Thin ring riding the border line itself. */
+  inset: 0;
+  padding: 1px;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+.services-tabs::after {
+  /* Soft halo of the same sweep, behind the control. */
+  z-index: -1;
+  filter: blur(7px);
+  opacity: 0.25;
+}
+@keyframes tabs-glow-spin {
+  to { --tabs-glow: 360deg; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .services-tabs::before,
+  .services-tabs::after { animation: none; opacity: 0; }
 }
 .services-tabs [role="tab"] {
   appearance: none;
