@@ -116,14 +116,22 @@
     if (refocus) selBtn.focus();
   }
 
-  function selPick(option) {
-    selOptions.forEach(function (o) { o.removeAttribute("aria-selected"); });
-    option.setAttribute("aria-selected", "true");
-    selInput.value = option.getAttribute("data-value");
-    selValue.textContent = option.textContent;
-    selValue.classList.remove("is-placeholder");
-    sel.classList.remove("is-invalid");
-    selClose(true);
+  // Multi-select: toggling a checkbox keeps the menu open.
+  function selToggle(option) {
+    var selected = option.getAttribute("aria-selected") === "true";
+    option.setAttribute("aria-selected", selected ? "false" : "true");
+    var picked = selOptions.filter(function (o) {
+      return o.getAttribute("aria-selected") === "true";
+    }).map(function (o) { return o.getAttribute("data-value"); });
+    selInput.value = picked.join(", ");
+    if (picked.length) {
+      selValue.textContent = picked.join(", ");
+      selValue.classList.remove("is-placeholder");
+      sel.classList.remove("is-invalid");
+    } else {
+      selValue.textContent = "Select all that apply";
+      selValue.classList.add("is-placeholder");
+    }
   }
 
   selBtn.addEventListener("click", function () {
@@ -145,7 +153,7 @@
       selOptions[Math.max(i - 1, 0)].focus();
     } else if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      if (i >= 0) selPick(selOptions[i]);
+      if (i >= 0) selToggle(selOptions[i]);
     } else if (e.key === "Escape") {
       e.stopPropagation();
       selClose(true);
@@ -155,7 +163,7 @@
   });
   selMenu.addEventListener("click", function (e) {
     var option = e.target.closest("[role=option]");
-    if (option) selPick(option);
+    if (option) selToggle(option);
   });
   document.addEventListener("click", function (e) {
     if (!selMenu.hidden && !sel.contains(e.target)) selClose(false);

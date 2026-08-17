@@ -18,7 +18,7 @@
       document.documentElement.setAttribute("data-theme", t === "light" ? "light" : "dark");
     })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=15" />
+  <link rel="stylesheet" href="css/style.css?v=16" />
 </head>
 <body>
 
@@ -666,9 +666,9 @@
                   aria-expanded="false"
                   aria-labelledby="cf-interest-label cf-select-value"
                 >
-                  <span class="is-placeholder" id="cf-select-value">Select an option</span>
+                  <span class="is-placeholder" id="cf-select-value">Select all that apply</span>
                 </button>
-                <ul class="cf-select-menu" id="cf-select-menu" role="listbox" aria-labelledby="cf-interest-label" hidden>
+                <ul class="cf-select-menu" id="cf-select-menu" role="listbox" aria-multiselectable="true" aria-labelledby="cf-interest-label" hidden>
                   <li role="option" tabindex="-1" data-value="Validation">Validation</li>
                   <li role="option" tabindex="-1" data-value="Staking">Staking</li>
                   <li role="option" tabindex="-1" data-value="RPC">RPC</li>
@@ -721,6 +721,6 @@
   <script src="js/rpc-config.js?v=1" defer></script>
   <script src="js/ascii-hero.js?v=19" defer></script>
   <script src="js/main.js?v=16" defer></script>
-  <script src="js/contact.js?v=5" defer></script>
+  <script src="js/contact.js?v=6" defer></script>
 </body>
 </html>

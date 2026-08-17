@@ -946,11 +946,13 @@ h2 {
   cursor: pointer;
   transition: border-color 0.25s var(--ease);
 }
-.cf-select-btn:focus-visible,
-.cf-select.is-open .cf-select-btn {
+.cf-select-btn:focus-visible {
   outline: none;
   border-color: var(--ghost-border-hover);
 }
+/* While open, field + menu share the standard hairline so the two
+   frames read as one continuous box. */
+.cf-select.is-open .cf-select-btn { border-color: var(--border); }
 .cf-select-btn .is-placeholder { color: var(--text-faint); }
 .cf-select.is-invalid .cf-select-btn { border-color: var(--text-dim); }
 .cf-select::after {
@@ -983,6 +985,10 @@ h2 {
   border: 1px solid var(--border);
 }
 .cf-select-menu li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-size: 0.95rem;
   color: var(--text);
   padding: 11px 14px;
@@ -990,12 +996,35 @@ h2 {
 }
 .cf-select-menu li + li { border-top: 1px solid var(--border); }
 .cf-select-menu li:hover,
-.cf-select-menu li:focus-visible,
-.cf-select-menu li.is-active {
+.cf-select-menu li:focus-visible {
   outline: none;
   background: var(--border-faint);
 }
-.cf-select-menu li[aria-selected="true"] { color: var(--text); }
+/* Checkbox square */
+.cf-select-menu li::before {
+  content: "";
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  border: 1px solid var(--ghost-border);
+  transition: background-color 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+.cf-select-menu li[aria-selected="true"]::before {
+  background: var(--text);
+  border-color: var(--text);
+}
+/* Check mark inside the square */
+.cf-select-menu li[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 19px;
+  top: 50%;
+  width: 4px;
+  height: 8px;
+  border-right: 1.5px solid var(--bg);
+  border-bottom: 1.5px solid var(--bg);
+  transform: translateY(-65%) rotate(45deg);
+}
 
 /* Invisible reCAPTCHA: badge hidden (attribution shown in the form instead). */
 .grecaptcha-badge { visibility: hidden !important; }
