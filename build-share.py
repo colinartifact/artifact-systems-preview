@@ -115,6 +115,7 @@ def main():
         (ROOT / "js" / "rpc-config.js").read_text(),
         (ROOT / "js" / "main.js").read_text(),
         (ROOT / "js" / "ascii-hero.js").read_text(),
+        (ROOT / "js" / "contact.js").read_text(),
     ])
 
     fragment = (

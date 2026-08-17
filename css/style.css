@@ -829,6 +829,10 @@ h2 {
   padding: 24px;
 }
 
+/* display:flex above would otherwise override the hidden attribute,
+   leaving an invisible click-eating overlay across the page. */
+.contact-modal[hidden] { display: none; }
+
 .contact-modal-backdrop {
   position: absolute;
   inset: 0;
