@@ -933,26 +933,85 @@ h2 {
 }
 
 .cf-select { position: relative; display: block; }
-.cf-select select {
-  appearance: none;
-  -webkit-appearance: none;
+.cf-select-btn {
+  width: 100%;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--text);
+  text-align: left;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  padding: 11px 36px 11px 14px;
   cursor: pointer;
-  padding-right: 36px;
+  transition: border-color 0.25s var(--ease);
 }
+.cf-select-btn:focus-visible,
+.cf-select.is-open .cf-select-btn {
+  outline: none;
+  border-color: var(--ghost-border-hover);
+}
+.cf-select-btn .is-placeholder { color: var(--text-faint); }
+.cf-select.is-invalid .cf-select-btn { border-color: var(--text-dim); }
 .cf-select::after {
   content: "";
   position: absolute;
   right: 14px;
-  top: 50%;
+  top: 22px;
   width: 7px;
   height: 7px;
   border-right: 1px solid var(--text-faint);
   border-bottom: 1px solid var(--text-faint);
   transform: translateY(-70%) rotate(45deg);
   pointer-events: none;
+  transition: transform 0.25s var(--ease);
 }
-.cf-select select:invalid { color: var(--text-faint); }
-.cf-select option { color: initial; }
+.cf-select.is-open::after { transform: translateY(-30%) rotate(225deg); }
+
+/* Options panel: framed exactly like the field it opens from. */
+.cf-select-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+.cf-select-menu li {
+  font-size: 0.95rem;
+  color: var(--text);
+  padding: 11px 14px;
+  cursor: pointer;
+}
+.cf-select-menu li + li { border-top: 1px solid var(--border); }
+.cf-select-menu li:hover,
+.cf-select-menu li:focus-visible,
+.cf-select-menu li.is-active {
+  outline: none;
+  background: var(--border-faint);
+}
+.cf-select-menu li[aria-selected="true"] { color: var(--text); }
+
+/* Invisible reCAPTCHA: badge hidden (attribution shown in the form instead). */
+.grecaptcha-badge { visibility: hidden !important; }
+#contact-captcha { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+.cf-recaptcha-note {
+  margin-top: 14px;
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  text-align: center;
+}
+.cf-recaptcha-note a {
+  color: var(--text-faint);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.cf-recaptcha-note a:hover { color: var(--text-dim); }
 
 .cf-hp {
   position: absolute;

@@ -90,6 +90,77 @@
     }
   });
 
+  /* ---------- "Interested in" dropdown ---------- */
+
+  var sel = document.getElementById("cf-select");
+  var selBtn = document.getElementById("cf-select-btn");
+  var selMenu = document.getElementById("cf-select-menu");
+  var selValue = document.getElementById("cf-select-value");
+  var selInput = form.elements.interested_in;
+  var selOptions = Array.prototype.slice.call(selMenu.querySelectorAll("[role=option]"));
+
+  function selOpen() {
+    selMenu.hidden = false;
+    sel.classList.add("is-open");
+    selBtn.setAttribute("aria-expanded", "true");
+    var current = selOptions.filter(function (o) {
+      return o.getAttribute("aria-selected") === "true";
+    })[0];
+    (current || selOptions[0]).focus();
+  }
+
+  function selClose(refocus) {
+    selMenu.hidden = true;
+    sel.classList.remove("is-open");
+    selBtn.setAttribute("aria-expanded", "false");
+    if (refocus) selBtn.focus();
+  }
+
+  function selPick(option) {
+    selOptions.forEach(function (o) { o.removeAttribute("aria-selected"); });
+    option.setAttribute("aria-selected", "true");
+    selInput.value = option.getAttribute("data-value");
+    selValue.textContent = option.textContent;
+    selValue.classList.remove("is-placeholder");
+    sel.classList.remove("is-invalid");
+    selClose(true);
+  }
+
+  selBtn.addEventListener("click", function () {
+    if (selMenu.hidden) selOpen(); else selClose(true);
+  });
+  selBtn.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      selOpen();
+    }
+  });
+  selMenu.addEventListener("keydown", function (e) {
+    var i = selOptions.indexOf(document.activeElement);
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      selOptions[Math.min(i + 1, selOptions.length - 1)].focus();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      selOptions[Math.max(i - 1, 0)].focus();
+    } else if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (i >= 0) selPick(selOptions[i]);
+    } else if (e.key === "Escape") {
+      e.stopPropagation();
+      selClose(true);
+    } else if (e.key === "Tab") {
+      selClose(false);
+    }
+  });
+  selMenu.addEventListener("click", function (e) {
+    var option = e.target.closest("[role=option]");
+    if (option) selPick(option);
+  });
+  document.addEventListener("click", function (e) {
+    if (!selMenu.hidden && !sel.contains(e.target)) selClose(false);
+  });
+
   /* ---------- reCAPTCHA (dormant until a site key is set) ---------- */
 
   var captchaWidget = null;
@@ -146,6 +217,12 @@
     e.preventDefault();
     errorEl.hidden = true;
     if (!form.reportValidity()) return;
+    // Hidden inputs skip native required validation.
+    if (!selInput.value) {
+      sel.classList.add("is-invalid");
+      selBtn.focus();
+      return;
+    }
 
     // Honeypot: pretend success for bots, send nothing.
     if (form.elements.website.value) {

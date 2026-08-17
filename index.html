@@ -18,7 +18,7 @@
       document.documentElement.setAttribute("data-theme", t === "light" ? "light" : "dark");
     })();
   </script>
-  <link rel="stylesheet" href="css/style.css?v=13" />
+  <link rel="stylesheet" href="css/style.css?v=14" />
 </head>
 <body>
 
@@ -284,7 +284,7 @@
           <path d="M12 4.75a7.25 7.25 0 0 1 0 14.5z" fill="currentColor"/>
         </svg>
       </button>
-      <a class="btn btn-primary btn-nav" href="#contact">Request access</a>
+      <a class="btn btn-primary btn-nav" href="#contact">Get started</a>
       <button id="menu-toggle" class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
@@ -297,7 +297,7 @@
         <a href="#coverage">Coverage</a>
         <a href="#contact">Contact</a>
       </nav>
-      <a class="btn btn-primary mobile-menu-cta" href="#contact">Request access</a>
+      <a class="btn btn-primary mobile-menu-cta" href="#contact">Get started</a>
     </div>
   </header>
 
@@ -312,7 +312,7 @@
         <h1>Compliant infrastructure<br /><span class="dim">trusted at scale.</span></h1>
         <p class="hero-sub">Artifact Systems provides staking, RPC, and verifiable chain data to the leaders of the digital asset industry.</p>
         <div class="hero-cta">
-          <a class="btn btn-primary" href="#contact">Request access</a>
+          <a class="btn btn-primary" href="#contact">Get started</a>
           <a class="btn btn-ghost" href="#services">Learn more</a>
         </div>
       </div>
@@ -655,19 +655,29 @@
               <span>Company</span>
               <input name="company" type="text" required autocomplete="organization" />
             </label>
-            <label class="cf-field">
-              <span>Interested in</span>
-              <span class="cf-select">
-                <select name="interested_in" required>
-                  <option value="" disabled selected>Select an option</option>
-                  <option>Validation</option>
-                  <option>Staking</option>
-                  <option>RPC</option>
-                  <option>Indexing</option>
-                  <option>Advice</option>
-                </select>
-              </span>
-            </label>
+            <div class="cf-field">
+              <span id="cf-interest-label">Interested in</span>
+              <div class="cf-select" id="cf-select">
+                <button
+                  type="button"
+                  class="cf-select-btn"
+                  id="cf-select-btn"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  aria-labelledby="cf-interest-label cf-select-value"
+                >
+                  <span class="is-placeholder" id="cf-select-value">Select an option</span>
+                </button>
+                <ul class="cf-select-menu" id="cf-select-menu" role="listbox" aria-labelledby="cf-interest-label" hidden>
+                  <li role="option" tabindex="-1" data-value="Validation">Validation</li>
+                  <li role="option" tabindex="-1" data-value="Staking">Staking</li>
+                  <li role="option" tabindex="-1" data-value="RPC">RPC</li>
+                  <li role="option" tabindex="-1" data-value="Indexing">Indexing</li>
+                  <li role="option" tabindex="-1" data-value="Advice">Advice</li>
+                </ul>
+                <input type="hidden" name="interested_in" value="" />
+              </div>
+            </div>
           </div>
           <label class="cf-field">
             <span>Message</span>
@@ -679,6 +689,11 @@
           <div id="contact-captcha"></div>
           <p class="cf-error" id="cf-error" hidden>Something went wrong sending your request. Please try again.</p>
           <button class="btn btn-primary cf-submit" id="cf-submit" type="submit">Send request</button>
+          <p class="cf-recaptcha-note">
+            Protected by reCAPTCHA. The Google
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and
+            <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> apply.
+          </p>
         </form>
       </div>
       <div class="cf-success" id="cf-success" hidden>
@@ -706,6 +721,6 @@
   <script src="js/rpc-config.js?v=1" defer></script>
   <script src="js/ascii-hero.js?v=19" defer></script>
   <script src="js/main.js?v=16" defer></script>
-  <script src="js/contact.js?v=4" defer></script>
+  <script src="js/contact.js?v=5" defer></script>
 </body>
 </html>
