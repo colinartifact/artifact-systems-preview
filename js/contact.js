@@ -67,6 +67,23 @@
   }
 
   openBtn.addEventListener("click", openModal);
+
+  // Nav "Get started": if the contact section is already on screen,
+  // open the form directly instead of scrolling to it.
+  var navCtas = document.querySelectorAll(
+    'a.btn-nav[href="#contact"], a.mobile-menu-cta[href="#contact"]'
+  );
+  Array.prototype.forEach.call(navCtas, function (a) {
+    a.addEventListener("click", function (e) {
+      var contact = document.getElementById("contact");
+      if (!contact) return;
+      var r = contact.getBoundingClientRect();
+      if (r.top < window.innerHeight * 0.6 && r.bottom > 0) {
+        e.preventDefault();
+        openModal();
+      }
+    });
+  });
   modal.addEventListener("click", function (e) {
     if (e.target.closest("[data-close]")) closeModal();
   });
