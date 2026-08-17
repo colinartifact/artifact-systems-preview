@@ -566,7 +566,8 @@ h2 {
   margin-bottom: 40px;
 }
 
-/* Subtle animated glow: a faint light tracing the pill's border. */
+/* Subtle shimmer confined to the border line: a few faint glints
+   drift along the hairline, with a 2px emanation hugging it. */
 @property --tabs-glow {
   syntax: "<angle>";
   initial-value: 0deg;
@@ -576,31 +577,37 @@ h2 {
 .services-tabs::after {
   content: "";
   position: absolute;
-  inset: -1px;
   border-radius: 999px;
   background: conic-gradient(
     from var(--tabs-glow),
-    transparent 0deg 290deg,
-    rgba(var(--dot-rgb), 0.4) 325deg,
+    transparent 0deg,
+    rgba(var(--dot-rgb), 0.45) 40deg,
+    transparent 95deg,
+    transparent 150deg,
+    rgba(var(--dot-rgb), 0.25) 205deg,
+    transparent 255deg,
+    transparent 295deg,
+    rgba(var(--dot-rgb), 0.35) 330deg,
     transparent 360deg
   );
-  pointer-events: none;
-  animation: tabs-glow-spin 9s linear infinite;
-}
-.services-tabs::before {
-  /* Thin ring riding the border line itself. */
-  inset: 0;
-  padding: 1px;
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   mask-composite: exclude;
+  pointer-events: none;
+  animation: tabs-glow-spin 14s linear infinite;
+}
+.services-tabs::before {
+  /* Shimmer in the hairline itself. */
+  inset: 0;
+  padding: 1px;
 }
 .services-tabs::after {
-  /* Soft halo of the same sweep, behind the control. */
-  z-index: -1;
-  filter: blur(7px);
-  opacity: 0.25;
+  /* Tight emanation off the line — a couple of pixels, no further. */
+  inset: -2px;
+  padding: 3px;
+  filter: blur(1.5px);
+  opacity: 0.6;
 }
 @keyframes tabs-glow-spin {
   to { --tabs-glow: 360deg; }
