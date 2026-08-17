@@ -27,8 +27,9 @@
       templateId: "template_notification",
       toEmail: "hello@artifact-capital.com"
     },
-    // Paste the Google reCAPTCHA v2 (invisible) site key here to enable.
-    recaptchaSiteKey: null
+    // Google reCAPTCHA v2 (invisible) site key — public by design; the
+    // matching secret key lives only in the EmailJS dashboard.
+    recaptchaSiteKey: "6LfoKFsrAAAAANiMGFpWg7K81NfwKV4nPnPfYUKm"
   };
 
   var modal = document.getElementById("contact-modal");
@@ -102,6 +103,9 @@
         size: "invisible",
         callback: function (token) {
           if (captchaResolve) captchaResolve(token);
+        },
+        "error-callback": function () {
+          if (captchaResolve) captchaResolve(null);
         }
       });
     };
@@ -112,14 +116,25 @@
   }
 
   function getCaptchaToken() {
-    // No key configured: resolve with null and submit without a token.
+    // No key configured or widget failed to load: resolve with null.
     if (!CONFIG.recaptchaSiteKey || captchaWidget === null) {
       return Promise.resolve(null);
     }
     return new Promise(function (resolve) {
-      captchaResolve = resolve;
-      window.grecaptcha.reset(captchaWidget);
-      window.grecaptcha.execute(captchaWidget);
+      var settled = false;
+      captchaResolve = function (token) {
+        if (settled) return;
+        settled = true;
+        resolve(token);
+      };
+      // Never hang the form on a stuck challenge.
+      setTimeout(function () { captchaResolve(null); }, 30000);
+      try {
+        window.grecaptcha.reset(captchaWidget);
+        window.grecaptcha.execute(captchaWidget);
+      } catch (err) {
+        captchaResolve(null);
+      }
     });
   }
 
@@ -155,9 +170,9 @@
       "Interested In: " + data.interestedIn + "\n" +
       "Message: " + data.message;
 
-    // Interim path (no captcha key yet): the EmailJS template refuses
-    // token-less sends, so open a pre-filled draft instead.
-    if (!CONFIG.recaptchaSiteKey) {
+    // Fallback: the EmailJS template refuses token-less sends, so when
+    // no captcha token is available, open a pre-filled draft instead.
+    function openDraft() {
       var subject = "Access request — " + (data.company || data.name);
       window.location.href =
         "mailto:" + CONFIG.emailjs.toEmail +
@@ -170,6 +185,10 @@
         "We’ve opened a pre-filled email draft — press send in your mail app to complete your request.";
       bodyEl.hidden = true;
       successEl.hidden = false;
+    }
+
+    if (!CONFIG.recaptchaSiteKey) {
+      openDraft();
       return;
     }
 
@@ -177,6 +196,10 @@
     submitBtn.textContent = "Sending…";
 
     getCaptchaToken().then(function (token) {
+      if (!token) {
+        openDraft();
+        return "drafted";
+      }
       var params = {
         to_email: CONFIG.emailjs.toEmail,
         from_name: data.name,
@@ -199,6 +222,7 @@
         })
       });
     }).then(function (res) {
+      if (res === "drafted") return;
       if (!res || !res.ok) throw new Error("send failed");
       bodyEl.hidden = true;
       successEl.hidden = false;
