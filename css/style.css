@@ -484,6 +484,10 @@ h2 {
   border-top: 1px solid var(--border-faint);
   border-bottom: 1px solid var(--border-faint);
 }
+/* Where two bordered sections touch, drop one edge so every
+   full-width divider is a single hairline. */
+.pillars + .section-tint,
+.section-tint + .section-tint { border-top: 0; }
 
 /* ---------- Infrastructure split ---------- */
 
