@@ -98,86 +98,11 @@
       pctx.globalAlpha = 1;
 
       if (p < 1) requestAnimationFrame(frame);
-      // The band has already faded to nothing by now. Detaching the
-      // canvas is deferred so that no node enters or leaves the
-      // document on the frame the theme is committed.
-      else setTimeout(cleanup, 220);
+      else cleanup();
     }
     requestAnimationFrame(frame);
     // Safety net: never leave the overlay behind if frames stop.
     setTimeout(cleanup, WIPE_MS + 500);
-  }
-
-  // Can we repaint one theme as the other over live content?
-  function supportsInvert() {
-    if (!window.CSS || !CSS.supports) return false;
-    return CSS.supports("mix-blend-mode", "difference") &&
-           CSS.supports("mask-image", "radial-gradient(#000,#fff)");
-  }
-
-  // The theme wipe. Both palettes are near-exact inverses, so inverting
-  // the live page inside a growing mask shows the incoming theme
-  // without snapshotting anything — every animation underneath keeps
-  // running. See .theme-invert in the stylesheet for why this inverts
-  // by blending rather than by filtering.
-  //
-  // Three rules keep the switch free of any single-frame artifact:
-  //   1. The layer mounts with the mask covering nothing, so attaching
-  //      it is a no-op however late the compositor picks it up.
-  //   2. The frame that commits the theme does nothing else — no node
-  //      is added or removed anywhere in the document — so the mask
-  //      collapse and the palette change resolve in one paint.
-  //   3. The layer is dropped several frames later, once it is already
-  //      inverting nothing, so removal is equally unobservable.
-  // The circle is authored at 512px and scaled up to cover the screen,
-  // so its gradient is rasterized once at a small size. Upscaling a
-  // smooth gradient is invisible, and the feather stays proportional.
-  var WIPE_R = 256;
-
-  function playInvertWipe(x, y, commit) {
-    var layer = document.createElement("div");
-    layer.className = "theme-invert";
-    var vw = window.innerWidth, vh = window.innerHeight;
-    var rayLen = Math.hypot(Math.max(x, vw - x), Math.max(y, vh - y));
-    var maxR = rayLen + 260;
-    layer.style.left = (x - WIPE_R) + "px";
-    layer.style.top = (y - WIPE_R) + "px";
-    document.body.appendChild(layer);
-
-    // Matches wipeEase (ease-in-out quad), which the glyph band uses,
-    // so the ring and the boundary travel as one wave.
-    var anim = layer.animate(
-      [{ transform: "scale(0)" }, { transform: "scale(" + (maxR / WIPE_R) + ")" }],
-      {
-        duration: WIPE_MS,
-        easing: "cubic-bezier(0.455, 0.03, 0.515, 0.955)",
-        fill: "forwards"
-      }
-    );
-
-    var finished = false;
-    function finish() {
-      if (finished) return;
-      finished = true;
-      // Hand off on a frame with no other DOM work: the circle stops
-      // contributing and the palette flips together, leaving the page
-      // looking exactly as it did the instant before. Opacity is a
-      // compositor property, so this costs the rasterizer nothing.
-      layer.style.opacity = "0";
-      commit();
-      // Only once that has been painted for several frames is the inert
-      // layer taken out of the document.
-      var frames = 0;
-      (function drop() {
-        if (++frames < 6) requestAnimationFrame(drop);
-        else { anim.cancel(); layer.remove(); }
-      })();
-    }
-
-    if (anim.finished) anim.finished.then(finish, function () {});
-    else anim.onfinish = finish;
-    // Safety net: never strand the overlay if frames stop.
-    setTimeout(finish, WIPE_MS + 500);
   }
 
   function applyTheme(next, crossfade, instant) {
@@ -215,20 +140,67 @@
       // Preferred path: a slow signal pulse that emanates from the
       // toggle itself; the theme boundary and an ASCII glyph ring
       // travel outward as one wave. Falls back to the whole-page
-      // cross-fade (still with the pulse) where backdrop-filter is
-      // unavailable.
+      // cross-fade (still with the pulse) where the View Transitions
+      // API is unavailable.
       var rect = toggleBtn.getBoundingClientRect();
       var x = rect.left + rect.width / 2;
       var y = rect.top + rect.height / 2;
 
-      if (!reduceMotion && supportsInvert()) {
+      if (!reduceMotion && typeof document.startViewTransition === "function") {
         try {
-          // Both overlays mount now, while the wipe still inverts
-          // nothing, and the theme is committed once the sweep lands.
-          playPulse(x, y, next);
-          playInvertWipe(x, y, function () {
+          var vt = document.startViewTransition(function () {
             applyTheme(next, false, true);
+            // Created inside the update callback so the canvas is
+            // captured with its own view-transition layer and can
+            // paint glyphs across BOTH sides of the theme boundary.
+            playPulse(x, y, next);
           });
+          vt.ready.then(function () {
+            // No hard clip edge: the new theme is revealed through a
+            // soft radial mask whose ~250px feather is exactly where
+            // the glyph band rides, so the characters ARE the border.
+            // Color-stop percentages resolve along the gradient ray,
+            // which keeps the wipe anchored and full-coverage even
+            // when a hosting page scales the site.
+            var vw = window.innerWidth, vh = window.innerHeight;
+            var xp = (x / vw) * 100;
+            var yp = (y / vh) * 100;
+            var rayLen = Math.hypot(Math.max(x, vw - x), Math.max(y, vh - y));
+            var STEPS = 48;
+            var frames = [];
+            var clipFrames = [];
+            // The clip circle rides 90px beyond the mask front: fully
+            // inside the mask's transparent zone, so it is invisible
+            // while the mask works, yet it still delivers the radial
+            // sweep in browsers that ignore animated mask images.
+            var clipRef = Math.hypot(vw, vh) / Math.SQRT2;
+            for (var i = 0; i <= STEPS; i++) {
+              var front = wipeEase(i / STEPS) * (rayLen + 260);
+              var inn = Math.max(0, ((front - 250) / rayLen) * 100).toFixed(2);
+              var out = Math.max(0.05, (front / rayLen) * 100).toFixed(2);
+              frames.push(
+                "radial-gradient(circle farthest-corner at " + xp + "% " + yp + "%, " +
+                "black 0%, black " + inn + "%, transparent " + out + "%)"
+              );
+              clipFrames.push(
+                "circle(" + (((front + 90) / clipRef) * 100).toFixed(2) +
+                "% at " + xp + "% " + yp + "%)"
+              );
+            }
+            // Animate a single mask property: doubling up with the
+            // -webkit- alias makes the browser rasterize the mask
+            // twice per frame.
+            var maskProp = (window.CSS && CSS.supports &&
+              CSS.supports("mask-image", "linear-gradient(#000,#fff)"))
+              ? "maskImage" : "webkitMaskImage";
+            var kf = { clipPath: clipFrames };
+            kf[maskProp] = frames;
+            document.documentElement.animate(kf, {
+              duration: WIPE_MS,
+              easing: "linear",
+              pseudoElement: "::view-transition-new(root)"
+            });
+          }).catch(function () {});
           return;
         } catch (err) { /* fall through to the cross-fade */ }
       }

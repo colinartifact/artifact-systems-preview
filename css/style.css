@@ -61,48 +61,10 @@
   --dot-rgb: 20, 20, 20;
 }
 
-/* Theme switch, preferred path: an inversion wipe emanating from the
-   toggle button. Because both palettes are near-exact inverses of one
-   another, inverting the live page inside a growing mask shows the
-   incoming theme over LIVE content — nothing is snapshotted, so the
-   hero animation and the logo marquee keep moving throughout.
-
-   The inversion is white composited in `difference` mode, NOT a
-   backdrop-filter. difference(white, x) == 255 - x, so the result is
-   identical, but it is an ordinary paint operation rather than a
-   readback into a dedicated compositor surface. backdrop-filter
-   samples the already-composited backdrop, and any layer entering or
-   leaving in the same frame as the theme flip left it sampling a stale
-   backdrop — which painted the whole page in the outgoing color.
-   Blending has no such surface lifecycle.
-
-   Nothing here is re-rasterized while the wipe runs. The sweep used to
-   rebuild a viewport-sized gradient mask every frame, which on a high
-   density display backs the rasterizer up badly: the stale tiles then
-   drained for half a second after the switch and replayed the tail of
-   the sweep over the committed theme. Instead this is a small circle
-   whose gradient is rasterized once and merely scaled up, so the
-   animation is a transform and costs the rasterizer nothing.
-
-   The gradient runs white to black rather than using a mask, because
-   difference blending against black is the identity — so the black rim
-   is invisible and its ramp becomes the soft edge. */
-.theme-invert {
-  position: fixed;
-  z-index: 190;
-  pointer-events: none;
-  width: 512px;
-  height: 512px;
-  border-radius: 50%;
-  background: radial-gradient(circle closest-side, #fff 0 86%, #000 100%);
-  mix-blend-mode: difference;
-  will-change: transform;
-  transform: scale(0);
-}
-
 /* Overlay canvas for the ASCII signal pulse that rides the theme
-   boundary. Created and removed by the toggle handler. It sits above
-   the inversion layer so its glyphs are not themselves inverted. */
+   boundary. Created and removed by the toggle handler. Its own
+   view-transition layer lets the glyphs paint across BOTH sides of
+   the masked theme boundary during the switch. */
 .theme-pulse {
   position: fixed;
   inset: 0;
@@ -110,7 +72,26 @@
   height: 100%;
   z-index: 200;
   pointer-events: none;
+  view-transition-name: theme-pulse;
 }
+::view-transition-old(theme-pulse),
+::view-transition-new(theme-pulse) {
+  animation: none;
+}
+::view-transition-group(theme-pulse) {
+  z-index: 10; /* above the root group's masked reveal */
+}
+
+/* Theme switch, preferred path: a slow circular reveal growing out of
+   the toggle button. The default snapshot cross-fade is disabled; the
+   new view is clipped by a script-driven expanding circle. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) { z-index: 1; }
+::view-transition-new(root) { z-index: 2; }
 
 /* Fallback cross-fade, applied only while the theme is switching. */
 html.theme-anim *,
