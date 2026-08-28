@@ -61,10 +61,24 @@
   --dot-rgb: 20, 20, 20;
 }
 
+/* Theme switch, preferred path: an inversion wipe growing out of the
+   toggle button. Because both palettes are near-exact inverses of one
+   another, a masked backdrop-filter repaints the incoming theme over
+   LIVE content — nothing is snapshotted, so the hero animation and the
+   logo marquee keep moving throughout the switch. The real data-theme
+   attribute is committed once the sweep covers the viewport. */
+.theme-invert {
+  position: fixed;
+  inset: 0;
+  z-index: 190;
+  pointer-events: none;
+  -webkit-backdrop-filter: invert(1);
+  backdrop-filter: invert(1);
+}
+
 /* Overlay canvas for the ASCII signal pulse that rides the theme
-   boundary. Created and removed by the toggle handler. Its own
-   view-transition layer lets the glyphs paint across BOTH sides of
-   the masked theme boundary during the switch. */
+   boundary. Created and removed by the toggle handler. It sits above
+   the inversion layer so its glyphs are not themselves inverted. */
 .theme-pulse {
   position: fixed;
   inset: 0;
@@ -72,26 +86,7 @@
   height: 100%;
   z-index: 200;
   pointer-events: none;
-  view-transition-name: theme-pulse;
 }
-::view-transition-old(theme-pulse),
-::view-transition-new(theme-pulse) {
-  animation: none;
-}
-::view-transition-group(theme-pulse) {
-  z-index: 10; /* above the root group's masked reveal */
-}
-
-/* Theme switch, preferred path: a slow circular reveal growing out of
-   the toggle button. The default snapshot cross-fade is disabled; the
-   new view is clipped by a script-driven expanding circle. */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
-}
-::view-transition-old(root) { z-index: 1; }
-::view-transition-new(root) { z-index: 2; }
 
 /* Fallback cross-fade, applied only while the theme is switching. */
 html.theme-anim *,

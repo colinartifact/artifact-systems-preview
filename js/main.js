@@ -105,6 +105,65 @@
     setTimeout(cleanup, WIPE_MS + 500);
   }
 
+  // Can we repaint the incoming theme as a filter over live content?
+  function supportsInvert() {
+    if (!window.CSS || !CSS.supports) return false;
+    return CSS.supports("backdrop-filter", "invert(1)") ||
+           CSS.supports("-webkit-backdrop-filter", "invert(1)");
+  }
+
+  // The theme wipe: a masked inversion layer expanding from the toggle.
+  // Both palettes are near-exact inverses, so inverting the live page
+  // inside the mask shows the incoming theme without snapshotting
+  // anything — every animation underneath keeps running. When the
+  // sweep has covered the viewport the real theme is committed and the
+  // layer is dropped in the same frame, so the handoff is invisible.
+  function playInvertWipe(x, y, next, done) {
+    var layer = document.createElement("div");
+    layer.className = "theme-invert";
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var xp = (x / vw) * 100;
+    var yp = (y / vh) * 100;
+    var rayLen = Math.hypot(Math.max(x, vw - x), Math.max(y, vh - y));
+    var maxR = rayLen + 260;
+    var maskProp = CSS.supports("mask-image", "linear-gradient(#000,#fff)")
+      ? "maskImage" : "webkitMaskImage";
+
+    function setFront(front) {
+      // A ~250px feather, exactly where the glyph band rides, so the
+      // characters read as the edge of the change rather than a line.
+      var inn = Math.max(0, ((front - 250) / rayLen) * 100).toFixed(2);
+      var out = Math.max(0.05, (front / rayLen) * 100).toFixed(2);
+      layer.style[maskProp] =
+        "radial-gradient(circle farthest-corner at " + xp + "% " + yp + "%, " +
+        "black 0%, black " + inn + "%, transparent " + out + "%)";
+    }
+
+    setFront(0);
+    document.body.appendChild(layer);
+
+    var start = performance.now();
+    var finished = false;
+    function finish() {
+      if (finished) return;
+      finished = true;
+      // Commit the theme and drop the filter together: the inverted
+      // old palette and the real new palette differ by ~3%, and the
+      // swap lands inside a single frame.
+      done();
+      layer.remove();
+    }
+    function frame(now) {
+      var p = Math.min(1, (now - start) / WIPE_MS);
+      setFront(wipeEase(p) * maxR);
+      if (p < 1) requestAnimationFrame(frame);
+      else finish();
+    }
+    requestAnimationFrame(frame);
+    // Safety net: never strand the overlay if frames stop.
+    setTimeout(finish, WIPE_MS + 500);
+  }
+
   function applyTheme(next, crossfade, instant) {
     var root = document.documentElement;
     if (crossfade && !reduceMotion) {
@@ -140,67 +199,18 @@
       // Preferred path: a slow signal pulse that emanates from the
       // toggle itself; the theme boundary and an ASCII glyph ring
       // travel outward as one wave. Falls back to the whole-page
-      // cross-fade (still with the pulse) where the View Transitions
-      // API is unavailable.
+      // cross-fade (still with the pulse) where backdrop-filter is
+      // unavailable.
       var rect = toggleBtn.getBoundingClientRect();
       var x = rect.left + rect.width / 2;
       var y = rect.top + rect.height / 2;
 
-      if (!reduceMotion && typeof document.startViewTransition === "function") {
+      if (!reduceMotion && supportsInvert()) {
         try {
-          var vt = document.startViewTransition(function () {
+          playInvertWipe(x, y, next, function () {
             applyTheme(next, false, true);
-            // Created inside the update callback so the canvas is
-            // captured with its own view-transition layer and can
-            // paint glyphs across BOTH sides of the theme boundary.
-            playPulse(x, y, next);
           });
-          vt.ready.then(function () {
-            // No hard clip edge: the new theme is revealed through a
-            // soft radial mask whose ~250px feather is exactly where
-            // the glyph band rides, so the characters ARE the border.
-            // Color-stop percentages resolve along the gradient ray,
-            // which keeps the wipe anchored and full-coverage even
-            // when a hosting page scales the site.
-            var vw = window.innerWidth, vh = window.innerHeight;
-            var xp = (x / vw) * 100;
-            var yp = (y / vh) * 100;
-            var rayLen = Math.hypot(Math.max(x, vw - x), Math.max(y, vh - y));
-            var STEPS = 48;
-            var frames = [];
-            var clipFrames = [];
-            // The clip circle rides 90px beyond the mask front: fully
-            // inside the mask's transparent zone, so it is invisible
-            // while the mask works, yet it still delivers the radial
-            // sweep in browsers that ignore animated mask images.
-            var clipRef = Math.hypot(vw, vh) / Math.SQRT2;
-            for (var i = 0; i <= STEPS; i++) {
-              var front = wipeEase(i / STEPS) * (rayLen + 260);
-              var inn = Math.max(0, ((front - 250) / rayLen) * 100).toFixed(2);
-              var out = Math.max(0.05, (front / rayLen) * 100).toFixed(2);
-              frames.push(
-                "radial-gradient(circle farthest-corner at " + xp + "% " + yp + "%, " +
-                "black 0%, black " + inn + "%, transparent " + out + "%)"
-              );
-              clipFrames.push(
-                "circle(" + (((front + 90) / clipRef) * 100).toFixed(2) +
-                "% at " + xp + "% " + yp + "%)"
-              );
-            }
-            // Animate a single mask property: doubling up with the
-            // -webkit- alias makes the browser rasterize the mask
-            // twice per frame.
-            var maskProp = (window.CSS && CSS.supports &&
-              CSS.supports("mask-image", "linear-gradient(#000,#fff)"))
-              ? "maskImage" : "webkitMaskImage";
-            var kf = { clipPath: clipFrames };
-            kf[maskProp] = frames;
-            document.documentElement.animate(kf, {
-              duration: WIPE_MS,
-              easing: "linear",
-              pseudoElement: "::view-transition-new(root)"
-            });
-          }).catch(function () {});
+          playPulse(x, y, next);
           return;
         } catch (err) { /* fall through to the cross-fade */ }
       }
