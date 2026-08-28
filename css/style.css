@@ -71,17 +71,33 @@
    backdrop-filter. difference(white, x) == 255 - x, so the result is
    identical, but it is an ordinary paint operation rather than a
    readback into a dedicated compositor surface. backdrop-filter
-   samples the already-composited backdrop, and inserting or removing
-   any layer in the same frame as the theme flip left it sampling a
-   stale backdrop for one frame — which painted the whole page in the
-   outgoing color. Blending has no such surface lifecycle. */
+   samples the already-composited backdrop, and any layer entering or
+   leaving in the same frame as the theme flip left it sampling a stale
+   backdrop — which painted the whole page in the outgoing color.
+   Blending has no such surface lifecycle.
+
+   Nothing here is re-rasterized while the wipe runs. The sweep used to
+   rebuild a viewport-sized gradient mask every frame, which on a high
+   density display backs the rasterizer up badly: the stale tiles then
+   drained for half a second after the switch and replayed the tail of
+   the sweep over the committed theme. Instead this is a small circle
+   whose gradient is rasterized once and merely scaled up, so the
+   animation is a transform and costs the rasterizer nothing.
+
+   The gradient runs white to black rather than using a mask, because
+   difference blending against black is the identity — so the black rim
+   is invisible and its ramp becomes the soft edge. */
 .theme-invert {
   position: fixed;
-  inset: 0;
   z-index: 190;
   pointer-events: none;
-  background: #fff;
+  width: 512px;
+  height: 512px;
+  border-radius: 50%;
+  background: radial-gradient(circle closest-side, #fff 0 86%, #000 100%);
   mix-blend-mode: difference;
+  will-change: transform;
+  transform: scale(0);
 }
 
 /* Overlay canvas for the ASCII signal pulse that rides the theme

@@ -129,61 +129,55 @@
   //      collapse and the palette change resolve in one paint.
   //   3. The layer is dropped several frames later, once it is already
   //      inverting nothing, so removal is equally unobservable.
+  // The circle is authored at 512px and scaled up to cover the screen,
+  // so its gradient is rasterized once at a small size. Upscaling a
+  // smooth gradient is invisible, and the feather stays proportional.
+  var WIPE_R = 256;
+
   function playInvertWipe(x, y, commit) {
     var layer = document.createElement("div");
     layer.className = "theme-invert";
     var vw = window.innerWidth, vh = window.innerHeight;
-    var xp = (x / vw) * 100;
-    var yp = (y / vh) * 100;
     var rayLen = Math.hypot(Math.max(x, vw - x), Math.max(y, vh - y));
     var maxR = rayLen + 260;
-    var maskProp = CSS.supports("mask-image", "radial-gradient(#000,#fff)")
-      ? "maskImage" : "webkitMaskImage";
-
-    // `front` is the leading edge of the inverted region, which shows
-    // the incoming theme. A ~250px feather trails it, exactly where the
-    // glyph band rides, so the characters read as the edge of the
-    // change. front = 0 inverts nothing; front = maxR inverts all.
-    function setFront(front) {
-      var inn = Math.max(0, ((front - 250) / rayLen) * 100).toFixed(2);
-      var out = Math.max(0.05, (front / rayLen) * 100).toFixed(2);
-      layer.style[maskProp] =
-        "radial-gradient(circle farthest-corner at " + xp + "% " + yp + "%, " +
-        "black 0%, black " + inn + "%, transparent " + out + "%)";
-    }
-
-    setFront(0);
+    layer.style.left = (x - WIPE_R) + "px";
+    layer.style.top = (y - WIPE_R) + "px";
     document.body.appendChild(layer);
+
+    // Matches wipeEase (ease-in-out quad), which the glyph band uses,
+    // so the ring and the boundary travel as one wave.
+    var anim = layer.animate(
+      [{ transform: "scale(0)" }, { transform: "scale(" + (maxR / WIPE_R) + ")" }],
+      {
+        duration: WIPE_MS,
+        easing: "cubic-bezier(0.455, 0.03, 0.515, 0.955)",
+        fill: "forwards"
+      }
+    );
 
     var finished = false;
     function finish() {
       if (finished) return;
       finished = true;
-      // Hand off on a frame with no other DOM work: the mask collapses
-      // to nothing and the palette flips together, which leaves the
-      // page looking exactly as it did the instant before.
-      setFront(0);
+      // Hand off on a frame with no other DOM work: the circle stops
+      // contributing and the palette flips together, leaving the page
+      // looking exactly as it did the instant before. Opacity is a
+      // compositor property, so this costs the rasterizer nothing.
+      layer.style.opacity = "0";
       commit();
       // Only once that has been painted for several frames is the inert
       // layer taken out of the document.
       var frames = 0;
       (function drop() {
         if (++frames < 6) requestAnimationFrame(drop);
-        else layer.remove();
+        else { anim.cancel(); layer.remove(); }
       })();
     }
 
-    // Let the mounted layer compose once before the sweep starts.
-    requestAnimationFrame(function () {
-      var start = performance.now();
-      (function frame(now) {
-        var p = Math.min(1, (now - start) / WIPE_MS);
-        if (p < 1) { setFront(wipeEase(p) * maxR); requestAnimationFrame(frame); }
-        else finish();
-      })(start);
-      // Safety net: never strand the overlay if frames stop.
-      setTimeout(finish, WIPE_MS + 500);
-    });
+    if (anim.finished) anim.finished.then(finish, function () {});
+    else anim.onfinish = finish;
+    // Safety net: never strand the overlay if frames stop.
+    setTimeout(finish, WIPE_MS + 500);
   }
 
   function applyTheme(next, crossfade, instant) {
