@@ -112,13 +112,20 @@
            CSS.supports("-webkit-backdrop-filter", "invert(1)");
   }
 
-  // The theme wipe: a masked inversion layer expanding from the toggle.
-  // Both palettes are near-exact inverses, so inverting the live page
-  // inside the mask shows the incoming theme without snapshotting
-  // anything — every animation underneath keeps running. When the
-  // sweep has covered the viewport the real theme is committed and the
-  // layer is dropped in the same frame, so the handoff is invisible.
-  function playInvertWipe(x, y, next, done) {
+  // The theme wipe. Both palettes are near-exact inverses, so a masked
+  // backdrop-filter can repaint one theme as the other over LIVE
+  // content — nothing is snapshotted and every animation underneath
+  // keeps running.
+  //
+  // The theme is committed up front and the filter inverts the region
+  // the wipe has NOT reached yet, so the mask retreats rather than
+  // grows. That ordering matters: backdrop-filter is a compositor
+  // effect whose teardown can lag a frame behind a main-thread style
+  // change, and a single frame of "new theme + inversion still live"
+  // renders the whole page in the outgoing color. Here the mask already
+  // covers nothing by the time the layer is dropped, so removal cannot
+  // be seen no matter how late it lands.
+  function playInvertWipe(x, y, begin) {
     var layer = document.createElement("div");
     layer.className = "theme-invert";
     var vw = window.innerWidth, vh = window.innerHeight;
@@ -128,40 +135,57 @@
     var maxR = rayLen + 260;
     var maskProp = CSS.supports("mask-image", "linear-gradient(#000,#fff)")
       ? "maskImage" : "webkitMaskImage";
+    var filterProp = CSS.supports("backdrop-filter", "invert(1)")
+      ? "backdropFilter" : "webkitBackdropFilter";
 
+    // `front` is the leading edge of the region already showing the new
+    // theme. Everything beyond it stays inverted, with a ~250px feather
+    // where the glyph band rides so the characters read as the edge.
     function setFront(front) {
-      // A ~250px feather, exactly where the glyph band rides, so the
-      // characters read as the edge of the change rather than a line.
       var inn = Math.max(0, ((front - 250) / rayLen) * 100).toFixed(2);
       var out = Math.max(0.05, (front / rayLen) * 100).toFixed(2);
       layer.style[maskProp] =
         "radial-gradient(circle farthest-corner at " + xp + "% " + yp + "%, " +
-        "black 0%, black " + inn + "%, transparent " + out + "%)";
+        "transparent 0%, transparent " + inn + "%, black " + out + "%)";
     }
 
+    // Warm the layer up with an identity filter: this allocates the
+    // compositor surface with nothing visible on screen, so the frame
+    // that turns the wipe on is a plain style change and never has to
+    // build the surface and swap the theme at the same time.
+    layer.style[filterProp] = "invert(0)";
     setFront(0);
     document.body.appendChild(layer);
 
-    var start = performance.now();
     var finished = false;
     function finish() {
       if (finished) return;
       finished = true;
-      // Commit the theme and drop the filter together: the inverted
-      // old palette and the real new palette differ by ~3%, and the
-      // swap lands inside a single frame.
-      done();
+      // The mask covers nothing by now; drop the effect too, so the
+      // element is inert well before it leaves the DOM.
+      layer.style[filterProp] = "invert(0)";
       layer.remove();
     }
-    function frame(now) {
-      var p = Math.min(1, (now - start) / WIPE_MS);
-      setFront(wipeEase(p) * maxR);
-      if (p < 1) requestAnimationFrame(frame);
-      else finish();
-    }
-    requestAnimationFrame(frame);
-    // Safety net: never strand the overlay if frames stop.
-    setTimeout(finish, WIPE_MS + 500);
+
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        // Critical frame: the outgoing theme turns over to the filter
+        // and the real theme is committed together. Both are ordinary
+        // style changes on already-composited nodes, so they land in
+        // one paint and the page never visibly moves.
+        layer.style[filterProp] = "invert(1)";
+        begin();
+        var start = performance.now();
+        (function frame(now) {
+          var p = Math.min(1, (now - start) / WIPE_MS);
+          setFront(wipeEase(p) * maxR);
+          if (p < 1) requestAnimationFrame(frame);
+          else finish();
+        })(start);
+        // Safety net: never strand the overlay if frames stop.
+        setTimeout(finish, WIPE_MS + 500);
+      });
+    });
   }
 
   function applyTheme(next, crossfade, instant) {
@@ -207,10 +231,10 @@
 
       if (!reduceMotion && supportsInvert()) {
         try {
-          playInvertWipe(x, y, next, function () {
+          playInvertWipe(x, y, function () {
             applyTheme(next, false, true);
+            playPulse(x, y, next);
           });
-          playPulse(x, y, next);
           return;
         } catch (err) { /* fall through to the cross-fade */ }
       }
