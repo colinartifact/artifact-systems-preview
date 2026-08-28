@@ -260,11 +260,14 @@
     var hideTimer = null;
 
     function fitViewport() {
-      var panel = panels[current];
-      // Skip while the panel is collapsed (mid-reveal or pre-layout);
-      // measuring a 0-width panel would lock a wildly tall height.
-      if (!panel.offsetWidth) return;
-      viewport.style.height = panel.offsetHeight + "px";
+      // Size to the tallest panel, not the current one, so everything
+      // below the slider stays put when switching tabs.
+      if (!panels[current].offsetWidth) return;
+      var tallest = 0;
+      panels.forEach(function (p) {
+        if (p.offsetHeight > tallest) tallest = p.offsetHeight;
+      });
+      viewport.style.height = tallest + "px";
     }
 
     // Keep the viewport height locked to the current panel as layout

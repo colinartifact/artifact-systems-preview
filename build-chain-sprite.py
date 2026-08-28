@@ -19,7 +19,7 @@ LOGO_HEIGHT = 40  # px, marquee row height
 
 # (slug, display name) in display order.
 CHAINS = [
-    ("agoric", "Agoric"), ("aleo", "Aleo"), ("allora", "Allora"),
+    ("agoric", "Agoric"), ("allora", "Allora"),
     ("aptos", "Aptos"), ("arbitrum-nova", "Arbitrum Nova"),
     ("arbitrum-one", "Arbitrum One"), ("arweave", "Arweave"),
     ("avalanche", "Avalanche C-Chain"), ("axelar", "Axelar"),
