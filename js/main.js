@@ -98,34 +98,38 @@
       pctx.globalAlpha = 1;
 
       if (p < 1) requestAnimationFrame(frame);
-      else cleanup();
+      // The band has already faded to nothing by now. Detaching the
+      // canvas is deferred so that no node enters or leaves the
+      // document on the frame the theme is committed.
+      else setTimeout(cleanup, 220);
     }
     requestAnimationFrame(frame);
     // Safety net: never leave the overlay behind if frames stop.
     setTimeout(cleanup, WIPE_MS + 500);
   }
 
-  // Can we repaint the incoming theme as a filter over live content?
+  // Can we repaint one theme as the other over live content?
   function supportsInvert() {
     if (!window.CSS || !CSS.supports) return false;
-    return CSS.supports("backdrop-filter", "invert(1)") ||
-           CSS.supports("-webkit-backdrop-filter", "invert(1)");
+    return CSS.supports("mix-blend-mode", "difference") &&
+           CSS.supports("mask-image", "radial-gradient(#000,#fff)");
   }
 
-  // The theme wipe. Both palettes are near-exact inverses, so a masked
-  // backdrop-filter can repaint one theme as the other over LIVE
-  // content — nothing is snapshotted and every animation underneath
-  // keeps running.
+  // The theme wipe. Both palettes are near-exact inverses, so inverting
+  // the live page inside a growing mask shows the incoming theme
+  // without snapshotting anything — every animation underneath keeps
+  // running. See .theme-invert in the stylesheet for why this inverts
+  // by blending rather than by filtering.
   //
-  // The theme is committed up front and the filter inverts the region
-  // the wipe has NOT reached yet, so the mask retreats rather than
-  // grows. That ordering matters: backdrop-filter is a compositor
-  // effect whose teardown can lag a frame behind a main-thread style
-  // change, and a single frame of "new theme + inversion still live"
-  // renders the whole page in the outgoing color. Here the mask already
-  // covers nothing by the time the layer is dropped, so removal cannot
-  // be seen no matter how late it lands.
-  function playInvertWipe(x, y, begin) {
+  // Three rules keep the switch free of any single-frame artifact:
+  //   1. The layer mounts with the mask covering nothing, so attaching
+  //      it is a no-op however late the compositor picks it up.
+  //   2. The frame that commits the theme does nothing else — no node
+  //      is added or removed anywhere in the document — so the mask
+  //      collapse and the palette change resolve in one paint.
+  //   3. The layer is dropped several frames later, once it is already
+  //      inverting nothing, so removal is equally unobservable.
+  function playInvertWipe(x, y, commit) {
     var layer = document.createElement("div");
     layer.className = "theme-invert";
     var vw = window.innerWidth, vh = window.innerHeight;
@@ -133,27 +137,21 @@
     var yp = (y / vh) * 100;
     var rayLen = Math.hypot(Math.max(x, vw - x), Math.max(y, vh - y));
     var maxR = rayLen + 260;
-    var maskProp = CSS.supports("mask-image", "linear-gradient(#000,#fff)")
+    var maskProp = CSS.supports("mask-image", "radial-gradient(#000,#fff)")
       ? "maskImage" : "webkitMaskImage";
-    var filterProp = CSS.supports("backdrop-filter", "invert(1)")
-      ? "backdropFilter" : "webkitBackdropFilter";
 
-    // `front` is the leading edge of the region already showing the new
-    // theme. Everything beyond it stays inverted, with a ~250px feather
-    // where the glyph band rides so the characters read as the edge.
+    // `front` is the leading edge of the inverted region, which shows
+    // the incoming theme. A ~250px feather trails it, exactly where the
+    // glyph band rides, so the characters read as the edge of the
+    // change. front = 0 inverts nothing; front = maxR inverts all.
     function setFront(front) {
       var inn = Math.max(0, ((front - 250) / rayLen) * 100).toFixed(2);
       var out = Math.max(0.05, (front / rayLen) * 100).toFixed(2);
       layer.style[maskProp] =
         "radial-gradient(circle farthest-corner at " + xp + "% " + yp + "%, " +
-        "transparent 0%, transparent " + inn + "%, black " + out + "%)";
+        "black 0%, black " + inn + "%, transparent " + out + "%)";
     }
 
-    // Warm the layer up with an identity filter: this allocates the
-    // compositor surface with nothing visible on screen, so the frame
-    // that turns the wipe on is a plain style change and never has to
-    // build the surface and swap the theme at the same time.
-    layer.style[filterProp] = "invert(0)";
     setFront(0);
     document.body.appendChild(layer);
 
@@ -161,30 +159,30 @@
     function finish() {
       if (finished) return;
       finished = true;
-      // The mask covers nothing by now; drop the effect too, so the
-      // element is inert well before it leaves the DOM.
-      layer.style[filterProp] = "invert(0)";
-      layer.remove();
+      // Hand off on a frame with no other DOM work: the mask collapses
+      // to nothing and the palette flips together, which leaves the
+      // page looking exactly as it did the instant before.
+      setFront(0);
+      commit();
+      // Only once that has been painted for several frames is the inert
+      // layer taken out of the document.
+      var frames = 0;
+      (function drop() {
+        if (++frames < 6) requestAnimationFrame(drop);
+        else layer.remove();
+      })();
     }
 
+    // Let the mounted layer compose once before the sweep starts.
     requestAnimationFrame(function () {
-      requestAnimationFrame(function () {
-        // Critical frame: the outgoing theme turns over to the filter
-        // and the real theme is committed together. Both are ordinary
-        // style changes on already-composited nodes, so they land in
-        // one paint and the page never visibly moves.
-        layer.style[filterProp] = "invert(1)";
-        begin();
-        var start = performance.now();
-        (function frame(now) {
-          var p = Math.min(1, (now - start) / WIPE_MS);
-          setFront(wipeEase(p) * maxR);
-          if (p < 1) requestAnimationFrame(frame);
-          else finish();
-        })(start);
-        // Safety net: never strand the overlay if frames stop.
-        setTimeout(finish, WIPE_MS + 500);
-      });
+      var start = performance.now();
+      (function frame(now) {
+        var p = Math.min(1, (now - start) / WIPE_MS);
+        if (p < 1) { setFront(wipeEase(p) * maxR); requestAnimationFrame(frame); }
+        else finish();
+      })(start);
+      // Safety net: never strand the overlay if frames stop.
+      setTimeout(finish, WIPE_MS + 500);
     });
   }
 
@@ -231,9 +229,11 @@
 
       if (!reduceMotion && supportsInvert()) {
         try {
+          // Both overlays mount now, while the wipe still inverts
+          // nothing, and the theme is committed once the sweep lands.
+          playPulse(x, y, next);
           playInvertWipe(x, y, function () {
             applyTheme(next, false, true);
-            playPulse(x, y, next);
           });
           return;
         } catch (err) { /* fall through to the cross-fade */ }

@@ -63,17 +63,25 @@
 
 /* Theme switch, preferred path: an inversion wipe emanating from the
    toggle button. Because both palettes are near-exact inverses of one
-   another, a masked backdrop-filter repaints one theme as the other
-   over LIVE content — nothing is snapshotted, so the hero animation and
-   the logo marquee keep moving throughout the switch. The real theme is
-   committed up front and this layer inverts whatever the wipe has not
-   reached yet. The filter itself is driven inline from main.js, which
-   warms the compositor surface with invert(0) before turning it on. */
+   another, inverting the live page inside a growing mask shows the
+   incoming theme over LIVE content — nothing is snapshotted, so the
+   hero animation and the logo marquee keep moving throughout.
+
+   The inversion is white composited in `difference` mode, NOT a
+   backdrop-filter. difference(white, x) == 255 - x, so the result is
+   identical, but it is an ordinary paint operation rather than a
+   readback into a dedicated compositor surface. backdrop-filter
+   samples the already-composited backdrop, and inserting or removing
+   any layer in the same frame as the theme flip left it sampling a
+   stale backdrop for one frame — which painted the whole page in the
+   outgoing color. Blending has no such surface lifecycle. */
 .theme-invert {
   position: fixed;
   inset: 0;
   z-index: 190;
   pointer-events: none;
+  background: #fff;
+  mix-blend-mode: difference;
 }
 
 /* Overlay canvas for the ASCII signal pulse that rides the theme
