@@ -68,8 +68,10 @@
 
   openBtn.addEventListener("click", openModal);
 
-  // Nav "Get started": if the contact section is already on screen,
-  // open the form directly instead of scrolling to it.
+  // If a nav CTA points at #contact and the contact section is already
+  // on screen, open the form directly instead of scrolling nowhere.
+  // Currently inert: the nav CTA is the Log In link. This re-arms by
+  // itself if a #contact button returns to the nav or mobile menu.
   var navCtas = document.querySelectorAll(
     'a.btn-nav[href="#contact"], a.mobile-menu-cta[href="#contact"]'
   );
